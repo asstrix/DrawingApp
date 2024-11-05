@@ -74,9 +74,7 @@ class DrawingApp:
 		save_button.pack(side=tk.LEFT)
 		self.add_tooltip(save_button, "Сохранить изоюражение")
 
-		# label = tk.Label(self.control_frame, text="Размер кисти:")
-		# label.pack(side=tk.LEFT)
-		brush_sizes = ['1', '2', '5', '40']
+		brush_sizes = ['1', '2', '5', '10']
 		self.selected_brush_size.set(brush_sizes[0])
 		brush_size = tk.OptionMenu(self.control_frame, self.selected_brush_size, *brush_sizes)
 		brush_size.pack(side=tk.LEFT)
