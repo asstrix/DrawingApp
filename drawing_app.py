@@ -35,13 +35,18 @@ class DrawingApp:
 		self.canvas = tk.Canvas(root, width=600, height=400, bg='white')
 		self.canvas.pack()
 
-		self.setup_ui()
-
 		self.last_x, self.last_y = None, None
 		self.pen_color = ''
 		self.last_color = ''
+		self.control_frame = tk.Frame(self.root)
 
-		self.brush()
+		self.rubber_button = tk.Button(self.control_frame, command=self.rubber)
+
+		self.setup_ui()
+
+		self.canvas.bind('<B1-Motion>', self.paint)
+		self.canvas.bind('<ButtonRelease-1>', self.reset)
+		self.canvas.bind('<Button-3>', self.pipette)
 
 	def setup_ui(self):
 		"""
@@ -49,31 +54,63 @@ class DrawingApp:
         saving, selecting brush size, and switching between brush and rubber modes.
 
 		"""
+		self.control_frame.pack(fill=tk.X)
 
-		control_frame = tk.Frame(self.root)
-		control_frame.pack(fill=tk.X)
-
-		clear_button = tk.Button(control_frame, text="Очистить", command=self.clear_canvas)
+		clear_icon = tk.PhotoImage(file="images/clear.png")
+		clear_button = tk.Button(self.control_frame, image=clear_icon, command=self.clear_canvas)
+		clear_button.image = clear_icon
 		clear_button.pack(side=tk.LEFT)
+		self.add_tooltip(clear_button, "Очистить")
 
-		color_button = tk.Button(control_frame, text="Выбрать цвет", command=self.choose_color)
+		color_icon = tk.PhotoImage(file="images/colour.png")
+		color_button = tk.Button(self.control_frame, image=color_icon, command=self.choose_color)
+		color_button.image = color_icon
 		color_button.pack(side=tk.LEFT)
+		self.add_tooltip(color_button, "Цвет кисти")
 
-		save_button = tk.Button(control_frame, text="Сохранить", command=self.save_image)
+		save_icon = tk.PhotoImage(file="images/save.png")
+		save_button = tk.Button(self.control_frame, image=save_icon, command=self.save_image)
+		save_button.image = save_icon
 		save_button.pack(side=tk.LEFT)
+		self.add_tooltip(save_button, "Сохранить изоюражение")
 
-		label = tk.Label(control_frame, text="Размер кисти:")
+		label = tk.Label(self.control_frame, text="Размер кисти:")
 		label.pack(side=tk.LEFT)
 		brush_sizes = ['1', '2', '5', '40']
 		self.selected_brush_size.set(brush_sizes[0])
-		brush_size = tk.OptionMenu(control_frame, self.selected_brush_size, *brush_sizes)
+		brush_size = tk.OptionMenu(self.control_frame, self.selected_brush_size, *brush_sizes)
 		brush_size.pack(side=tk.LEFT)
+		self.add_tooltip(brush_size, "Размер кисти")
 
-		brush_button = tk.Button(control_frame, text="Кисть", command=self.brush)
-		brush_button.pack(side=tk.LEFT)
+		rubber_icon = tk.PhotoImage(file="images/rubber.png")
+		self.rubber_button.config(image=rubber_icon, state="disabled")
+		self.rubber_button.image = rubber_icon
+		self.rubber_button.pack(side=tk.LEFT)
+		self.add_tooltip(self.rubber_button, "Ластик")
 
-		rubber_button = tk.Button(control_frame, text="Ластик", command=self.rubber)
-		rubber_button.pack(side=tk.LEFT)
+	@staticmethod
+	def add_tooltip(widget, text):
+		tooltip = None
+
+		def show_tooltip(event):
+			nonlocal tooltip
+			if tooltip is not None:
+				return
+			x = widget.winfo_rootx() + 20
+			y = widget.winfo_rooty() + widget.winfo_height() + 5
+			tooltip = tk.Toplevel(widget)
+			tooltip.wm_overrideredirect(True)
+			tooltip.wm_geometry(f"+{x}+{y}")
+			label = tk.Label(tooltip, text=text, background="white", relief="solid", borderwidth=1, padx=5, pady=3)
+			label.pack()
+
+		def hide_tooltip(event):
+			nonlocal tooltip
+			if isinstance(tooltip, tk.Toplevel):
+				tooltip.destroy()
+				tooltip = None
+		widget.bind("<Enter>", show_tooltip)
+		widget.bind("<Leave>", hide_tooltip)
 
 	def paint(self, event):
 		"""
@@ -83,6 +120,7 @@ class DrawingApp:
         Args:
             event (tk.Event): The event object containing the current mouse position.
 		"""
+		self.rubber_button.config(state="normal")
 		if self.last_x and self.last_y:
 			self.canvas.create_line(
 				self.last_x, self.last_y, event.x, event.y,
@@ -96,16 +134,6 @@ class DrawingApp:
 		self.last_x = event.x
 		self.last_y = event.y
 
-	def brush(self):
-		"""
-        Activates the brush tool by setting the pen color to the last used color
-        or black if no previous color exists, and binds the paint method to mouse
-        motion events.
-		"""
-		self.pen_color = self.last_color if self.last_color != '' else 'black'
-		self.canvas.bind('<B1-Motion>', self.paint)
-		self.canvas.bind('<ButtonRelease-1>', self.reset)
-
 	def rubber(self):
 		"""
         Activates the rubber tool by setting the pen color to white (background color)
@@ -113,6 +141,10 @@ class DrawingApp:
 		"""
 		self.last_color = self.pen_color
 		self.pen_color = 'white'
+
+	def pipette(self, event):
+		rgb = self.image.getpixel((event.x, event.y))
+		self.pen_color = '#{:02x}{:02x}{:02x}'.format(*rgb)
 
 	def reset(self, event):
 		"""
