@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw
 
 class DrawingApp:
     def __init__(self, root):
+        self.selected_brush_size = tk.StringVar()
         self.root = root
         self.root.title("Рисовалка с сохранением в PNG")
 
@@ -17,11 +18,10 @@ class DrawingApp:
         self.setup_ui()
 
         self.last_x, self.last_y = None, None
-        self.pen_color = 'black'
+        self.pen_color = ''
+        self.last_color = ''
 
-        self.canvas.bind('<B1-Motion>', self.paint)
-        self.canvas.bind('<ButtonRelease-1>', self.reset)
-
+        self.brush()
 
     def setup_ui(self):
         control_frame = tk.Frame(self.root)
@@ -38,11 +38,16 @@ class DrawingApp:
 
         label = tk.Label(control_frame, text="Размер кисти:")
         label.pack(side=tk.LEFT)
-        brush_sizes = ['1', '2', '5', '10']
-        self.selected_brush_size = tk.StringVar()
+        brush_sizes = ['1', '2', '5', '40']
         self.selected_brush_size.set(brush_sizes[0])
         brush_size = tk.OptionMenu(control_frame, self.selected_brush_size, *brush_sizes)
         brush_size.pack(side=tk.LEFT)
+
+        brush_button = tk.Button(control_frame, text="Кисть", command=self.brush)
+        brush_button.pack(side=tk.LEFT)
+
+        rubber_button = tk.Button(control_frame, text="Ластик", command=self.rubber)
+        rubber_button.pack(side=tk.LEFT)
 
     def paint(self, event):
         if self.last_x and self.last_y:
@@ -54,6 +59,15 @@ class DrawingApp:
 
         self.last_x = event.x
         self.last_y = event.y
+
+    def brush(self):
+        self.pen_color = self.last_color if self.last_color != '' else 'black'
+        self.canvas.bind('<B1-Motion>', self.paint)
+        self.canvas.bind('<ButtonRelease-1>', self.reset)
+
+    def rubber(self):
+        self.last_color = self.pen_color
+        self.pen_color = 'white'
 
     def reset(self, event):
         self.last_x, self.last_y = None, None
