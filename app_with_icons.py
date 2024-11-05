@@ -70,7 +70,7 @@ class DrawingApp:
 		save_button = tk.Button(self.control_frame, image=save_icon, command=self.save_image)
 		save_button.image = save_icon
 		save_button.pack(side=tk.LEFT)
-		self.add_tooltip(save_button, "Сохранить")
+		self.add_tooltip(save_button, "Сохранить изоюражение")
 
 		label = tk.Label(self.control_frame, text="Размер кисти:")
 		label.pack(side=tk.LEFT)
