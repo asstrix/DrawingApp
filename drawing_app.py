@@ -36,7 +36,7 @@ class DrawingApp:
 		self.canvas.pack()
 
 		self.last_x, self.last_y = None, None
-		self.pen_color = ''
+		self.pen_color = 'black'
 		self.last_color = ''
 		self.control_frame = tk.Frame(self.root)
 
@@ -74,8 +74,8 @@ class DrawingApp:
 		save_button.pack(side=tk.LEFT)
 		self.add_tooltip(save_button, "Сохранить изоюражение")
 
-		label = tk.Label(self.control_frame, text="Размер кисти:")
-		label.pack(side=tk.LEFT)
+		# label = tk.Label(self.control_frame, text="Размер кисти:")
+		# label.pack(side=tk.LEFT)
 		brush_sizes = ['1', '2', '5', '40']
 		self.selected_brush_size.set(brush_sizes[0])
 		brush_size = tk.OptionMenu(self.control_frame, self.selected_brush_size, *brush_sizes)
