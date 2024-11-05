@@ -84,12 +84,15 @@ class DrawingApp:
             event (tk.Event): The event object containing the current mouse position.
 		"""
 		if self.last_x and self.last_y:
-			self.canvas.create_line(self.last_x, self.last_y, event.x, event.y,
-									width=int(self.selected_brush_size.get()), fill=self.pen_color,
-									capstyle=tk.ROUND, smooth=tk.TRUE)
-			self.draw.line([self.last_x, self.last_y, event.x, event.y], fill=self.pen_color,
-						   width=int(self.selected_brush_size.get()))
-
+			self.canvas.create_line(
+				self.last_x, self.last_y, event.x, event.y,
+				width=int(self.selected_brush_size.get()), fill=self.pen_color,
+				capstyle=tk.ROUND, smooth=tk.TRUE
+			)
+			self.draw.line(
+				[self.last_x, self.last_y, event.x, event.y],
+				fill=self.pen_color, width=int(self.selected_brush_size.get())
+				)
 		self.last_x = event.x
 		self.last_y = event.y
 
