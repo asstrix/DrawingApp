@@ -58,16 +58,19 @@ class DrawingApp:
 		clear_button = tk.Button(self.control_frame, image=clear_icon, command=self.clear_canvas)
 		clear_button.image = clear_icon
 		clear_button.pack(side=tk.LEFT)
+		self.add_tooltip(clear_button, "Очистить")
 
 		color_icon = tk.PhotoImage(file="images/colour.png")
 		color_button = tk.Button(self.control_frame, image=color_icon, command=self.choose_color)
 		color_button.image = color_icon
 		color_button.pack(side=tk.LEFT)
+		self.add_tooltip(color_button, "Цвет кисти")
 
 		save_icon = tk.PhotoImage(file="images/save.png")
 		save_button = tk.Button(self.control_frame, image=save_icon, command=self.save_image)
 		save_button.image = save_icon
 		save_button.pack(side=tk.LEFT)
+		self.add_tooltip(save_button, "Сохранить")
 
 		label = tk.Label(self.control_frame, text="Размер кисти:")
 		label.pack(side=tk.LEFT)
@@ -75,16 +78,43 @@ class DrawingApp:
 		self.selected_brush_size.set(brush_sizes[0])
 		brush_size = tk.OptionMenu(self.control_frame, self.selected_brush_size, *brush_sizes)
 		brush_size.pack(side=tk.LEFT)
+		self.add_tooltip(brush_size, "Размер кисти")
 
 		brush_icon = tk.PhotoImage(file="images/brush.png")
 		self.brush_button.config(image=brush_icon)
 		self.brush_button.image = brush_icon
 		self.brush_button.pack(side=tk.LEFT)
+		self.add_tooltip(self.brush_button, "Кисть")
 
 		rubber_icon = tk.PhotoImage(file="images/rubber.png")
 		self.rubber_button.config(image=rubber_icon, state="disabled")
 		self.rubber_button.image = rubber_icon
 		self.rubber_button.pack(side=tk.LEFT)
+		self.add_tooltip(self.rubber_button, "Ластик")
+
+	@staticmethod
+	def add_tooltip(widget, text):
+		tooltip = None
+
+		def show_tooltip(event):
+			nonlocal tooltip
+			if tooltip is not None:
+				return
+			x = widget.winfo_rootx() + 20
+			y = widget.winfo_rooty() + widget.winfo_height() + 5
+			tooltip = tk.Toplevel(widget)
+			tooltip.wm_overrideredirect(True)
+			tooltip.wm_geometry(f"+{x}+{y}")
+			label = tk.Label(tooltip, text=text, background="white", relief="solid", borderwidth=1, padx=5, pady=3)
+			label.pack()
+
+		def hide_tooltip(event):
+			nonlocal tooltip
+			if isinstance(tooltip, tk.Toplevel):
+				tooltip.destroy()
+				tooltip = None
+		widget.bind("<Enter>", show_tooltip)
+		widget.bind("<Leave>", hide_tooltip)
 
 	def paint(self, event):
 		"""
