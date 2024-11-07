@@ -45,9 +45,12 @@ class DrawingApp:
 		self.canvas = tk.Canvas(root, width=600, height=400, bg='white')
 		self.canvas.pack()
 
+		# Binds
 		self.canvas.bind('<B1-Motion>', self.paint)
 		self.canvas.bind('<ButtonRelease-1>', self.reset)
 		self.canvas.bind('<Button-3>', self.pipette)
+		self.root.bind('<Control-s>', self.save_image)
+		self.root.bind('<Control-c>', self.choose_color)
 
 	def setup_ui(self):
 		"""
@@ -64,48 +67,33 @@ class DrawingApp:
 		self.add_tooltip(clear_button, "Очистить")
 
 		color_icon = tk.PhotoImage(file="images/colour.png")
-		color_button = tk.Button(self.control_frame, image=color_icon, command=self.choose_color)
+		color_button = tk.Button(self.control_frame, image=color_icon, command=lambda: self.choose_color(None))
 		color_button.image = color_icon
 		color_button.pack(side=tk.LEFT)
 		self.add_tooltip(color_button, "Цвет кисти")
 
 		save_icon = tk.PhotoImage(file="images/save.png")
-		save_button = tk.Button(self.control_frame, image=save_icon, command=self.save_image)
+		save_button = tk.Button(self.control_frame, image=save_icon, command=lambda: self.save_image(None))
 		save_button.image = save_icon
 		save_button.pack(side=tk.LEFT)
-		self.add_tooltip(save_button, "Сохранить изоюражение")
-
-		# brush_sizes = ['1', '2', '5', '10']
-		# self.selected_brush_size.set(brush_sizes[0])
-		# brush_size = tk.OptionMenu(self.control_frame, self.selected_brush_size, *brush_sizes)
-		# brush_size.pack(side=tk.LEFT)
-		# self.add_tooltip(brush_size, "Размер кисти")
-		#
-		# brush_icon = tk.PhotoImage(file="images/brush.png")
-		# brush_button = tk.Button(self.control_frame, image=brush_icon, command=self.brush)
-		# brush_button.config(image=brush_icon)
-		# brush_button.image = brush_icon
-		# brush_button.pack(side=tk.LEFT)
-		# self.add_tooltip(brush_button, "Кисть")
+		self.add_tooltip(save_button, "Сохранить")
 
 		brush_icon = tk.PhotoImage(file="images/brush.png")
-		self.brush_button.config(image=brush_icon)
+		self.brush_button.config(image=brush_icon, command=self.brush)
 		self.brush_button.image = brush_icon
 		self.brush_button.pack(side=tk.LEFT)
 
-		# Создаем меню для выбора размера кисти
+		# Brush sizes menu
 		brush_menu = tk.Menu(self.root, tearoff=0)
 		brush_sizes = ['1', '2', '5', '10']
+		self.selected_brush_size.set(brush_sizes[0])
 		for size in brush_sizes:
 			brush_menu.add_radiobutton(
 				label=size,
 				variable=self.selected_brush_size,
-				command=lambda: self.brush_button.config(relief="raised")
+				command=self.brush
 			)
 		self.brush_button.bind("<Button-1>", lambda event: brush_menu.post(event.x_root, event.y_root))
-
-
-		# Добавляем подсказку к кнопке
 		self.add_tooltip(self.brush_button, "Выбор размера кисти")
 
 		rubber_icon = tk.PhotoImage(file="images/rubber.png")
@@ -168,6 +156,7 @@ class DrawingApp:
 		self.pen_color = self.last_color
 		self.canvas.config(cursor="@cursor.cur")
 		self.mode = 'draw'
+		self.rubber_button.config(relief="raised")
 
 	def rubber(self):
 		"""
@@ -179,12 +168,15 @@ class DrawingApp:
 		self.canvas.config(cursor='@eraser.cur')
 		self.mode = 'rubber'
 		self.brush_button.config(relief="raised")
+		self.rubber_button.config(relief="sunken")
 
 	def pipette(self, event):
 		rgb = self.image.getpixel((event.x, event.y))
 		self.pen_color = '#{:02x}{:02x}{:02x}'.format(*rgb)
 		self.canvas.config(cursor='@pipette.cur')
 		self.mode = 'draw'
+		self.brush_button.config(relief="sunken")
+		self.rubber_button.config(relief="raised")
 
 	def reset(self, event):
 		"""
@@ -204,14 +196,14 @@ class DrawingApp:
 		self.image = Image.new("RGB", (600, 400), "white")
 		self.draw = ImageDraw.Draw(self.image)
 
-	def choose_color(self):
+	def choose_color(self, event):
 		"""
 		Opens a color chooser dialog to let the user pick a new color for the pen.
         Updates the pen color with the selected color.
 		"""
 		self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 
-	def save_image(self):
+	def save_image(self, event):
 		"""
 		Opens a file dialog to save the current drawing as a PNG file. If a file
         path is chosen, the image is saved, and a success message is displayed.
