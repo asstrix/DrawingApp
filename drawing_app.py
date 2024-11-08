@@ -37,8 +37,10 @@ class DrawingApp:
 		self.control_frame = tk.Frame(self.root)
 		self.mode = 'draw'
 
+		self.color_button = tk.Button(self.control_frame, command=lambda: self.choose_color(None))
 		self.brush_button = tk.Button(self.control_frame, command=self.brush)
 		self.rubber_button = tk.Button(self.control_frame, command=self.rubber)
+		self.label = tk.Label(self.control_frame, bg=self.pen_color)
 
 		self.setup_ui()
 
@@ -67,10 +69,10 @@ class DrawingApp:
 		self.add_tooltip(clear_button, "Очистить")
 
 		color_icon = tk.PhotoImage(file="images/colour.png")
-		color_button = tk.Button(self.control_frame, image=color_icon, command=lambda: self.choose_color(None))
-		color_button.image = color_icon
-		color_button.pack(side=tk.LEFT)
-		self.add_tooltip(color_button, "Цвет кисти")
+		self.color_button.config(image=color_icon)
+		self.color_button.image = color_icon
+		self.color_button.pack(side=tk.LEFT)
+		self.add_tooltip(self.color_button, "Цвет кисти")
 
 		save_icon = tk.PhotoImage(file="images/save.png")
 		save_button = tk.Button(self.control_frame, image=save_icon, command=lambda: self.save_image(None))
@@ -79,7 +81,7 @@ class DrawingApp:
 		self.add_tooltip(save_button, "Сохранить")
 
 		brush_icon = tk.PhotoImage(file="images/brush.png")
-		self.brush_button.config(image=brush_icon, command=self.brush)
+		self.brush_button.config(image=brush_icon, relief='sunken')
 		self.brush_button.image = brush_icon
 		self.brush_button.pack(side=tk.LEFT)
 
@@ -88,11 +90,7 @@ class DrawingApp:
 		brush_sizes = ['1', '2', '5', '10']
 		self.selected_brush_size.set(brush_sizes[0])
 		for size in brush_sizes:
-			brush_menu.add_radiobutton(
-				label=size,
-				variable=self.selected_brush_size,
-				command=self.brush
-			)
+			brush_menu.add_radiobutton(label=size, variable=self.selected_brush_size, command=self.brush)
 		self.brush_button.bind("<Button-1>", lambda event: brush_menu.post(event.x_root, event.y_root))
 		self.add_tooltip(self.brush_button, "Выбор размера кисти")
 
@@ -101,6 +99,10 @@ class DrawingApp:
 		self.rubber_button.image = rubber_icon
 		self.rubber_button.pack(side=tk.LEFT)
 		self.add_tooltip(self.rubber_button, "Ластик")
+
+		self.label.pack()
+		self.label.place(relx=0.98, rely=0.2, anchor="ne", width=20, height=20)
+		self.add_tooltip(self.label, "Текущий цвет")
 
 	@staticmethod
 	def add_tooltip(widget, text):
@@ -151,8 +153,10 @@ class DrawingApp:
 				)
 		self.last_x = event.x
 		self.last_y = event.y
+		self.label.config(bg=self.pen_color)
 
 	def brush(self):
+		self.color_button.config(state="normal")
 		self.pen_color = self.last_color
 		self.canvas.config(cursor="@cursor.cur")
 		self.mode = 'draw'
@@ -169,6 +173,7 @@ class DrawingApp:
 		self.mode = 'rubber'
 		self.brush_button.config(relief="raised")
 		self.rubber_button.config(relief="sunken")
+		self.color_button.config(state="disabled")
 
 	def pipette(self, event):
 		rgb = self.image.getpixel((event.x, event.y))
@@ -202,6 +207,7 @@ class DrawingApp:
         Updates the pen color with the selected color.
 		"""
 		self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
+		self.last_color = self.pen_color
 
 	def save_image(self, event):
 		"""
