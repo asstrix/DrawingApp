@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import colorchooser, filedialog, messagebox
+from tkinter import colorchooser, filedialog, messagebox, simpledialog
 from PIL import Image, ImageDraw
 
 
@@ -47,12 +47,7 @@ class DrawingApp:
 		self.canvas = tk.Canvas(root, width=600, height=400, bg='white')
 		self.canvas.pack()
 
-		# Binds
-		self.canvas.bind('<B1-Motion>', self.paint)
-		self.canvas.bind('<ButtonRelease-1>', self.reset)
-		self.canvas.bind('<Button-3>', self.pipette)
-		self.root.bind('<Control-s>', self.save_image)
-		self.root.bind('<Control-c>', self.choose_color)
+		self.binds()
 
 	def setup_ui(self):
 		"""
@@ -100,9 +95,23 @@ class DrawingApp:
 		self.rubber_button.pack(side=tk.LEFT)
 		self.add_tooltip(self.rubber_button, "Ластик")
 
+		resize_icon = tk.PhotoImage(file="images/resize.png")
+		resize_button = tk.Button(self.control_frame, image=resize_icon, command=self.choose_size)
+		resize_button.image = resize_icon
+		resize_button.pack(side=tk.LEFT)
+		self.add_tooltip(resize_button, "Размер холста")
+
 		self.label.pack()
 		self.label.place(relx=0.98, rely=0.2, anchor="ne", width=20, height=20)
 		self.add_tooltip(self.label, "Текущий цвет")
+
+	def binds(self):
+		# Binds
+		self.canvas.bind('<B1-Motion>', self.paint)
+		self.canvas.bind('<ButtonRelease-1>', self.reset)
+		self.canvas.bind('<Button-3>', self.pipette)
+		self.root.bind('<Control-s>', self.save_image)
+		self.root.bind('<Control-c>', self.choose_color)
 
 	@staticmethod
 	def add_tooltip(widget, text):
@@ -208,6 +217,17 @@ class DrawingApp:
 		"""
 		self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 		self.last_color = self.pen_color
+
+	def choose_size(self):
+		width = tk.simpledialog.askinteger('','Ширина', parent=self.root)
+		height = tk.simpledialog.askinteger('' ,'Высота', parent=self.root)
+		if width is not None and height is not None:
+			self.image = self.image = Image.new("RGB", (width, height), "white")
+			self.draw = ImageDraw.Draw(self.image)
+			self.canvas.destroy()
+			self.canvas = tk.Canvas(self.root, width=width, height=height, bg='white')
+			self.canvas.pack()
+			self.binds()
 
 	def save_image(self, event):
 		"""
