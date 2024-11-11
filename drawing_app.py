@@ -31,6 +31,7 @@ class DrawingApp:
 
 		self.width = 600
 		self.height = 400
+		self.bg_colour = 'white'
 		self.image = Image.new("RGBA", (self.width, self.height), (255, 255, 255, 255))
 		self.draw = ImageDraw.Draw(self.image)
 
@@ -191,8 +192,9 @@ class DrawingApp:
 		Activates the rubber tool by setting the pen color to white (background color)
 		and storing the last used pen color in case the user switches back to brush.
 		"""
+
 		self.last_color = self.pen_color
-		self.pen_color = 'white'
+		self.pen_color = self.bg_colour
 		self.canvas.config(cursor='@eraser.cur')
 		self.mode = 'rubber'
 		self.brush_button.config(relief='raised')
@@ -225,6 +227,8 @@ class DrawingApp:
 		self.canvas.config(background='white')
 		self.image = Image.new('RGB', (self.width, self.height), 'white')
 		self.draw = ImageDraw.Draw(self.image)
+		self.bg_colour = 'white'
+		self.brush()
 
 	def choose_color(self, event):
 		"""
@@ -246,12 +250,12 @@ class DrawingApp:
 			self.binds()
 
 	def background(self):
-		background = colorchooser.askcolor(color=self.pen_color)[1]
-		if background:
-			bg_rgb = Image.new("RGB", (1, 1), background).getpixel((0, 0))
+		self.bg_colour = colorchooser.askcolor(color=self.pen_color)[1]
+		if self.bg_colour:
+			bg_rgb = Image.new("RGB", (1, 1), self.bg_colour).getpixel((0, 0))
 			self.image = Image.new("RGBA", self.image.size, (*bg_rgb, 255))
 			self.draw = ImageDraw.Draw(self.image)
-			self.canvas.config(background=background)
+			self.canvas.config(background=self.bg_colour)
 			self.tk_image = ImageTk.PhotoImage(self.image.convert("RGB"))
 			self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
 
