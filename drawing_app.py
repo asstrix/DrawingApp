@@ -20,10 +20,41 @@ class DrawingApp:
 
 	def __init__(self, root):
 		"""
-		Initializes the DrawingApp with the main tkinter root, canvas, image, and UI controls.
+		Initializes the DrawingApp with a Tkinter root, canvas, image, and UI controls.
+
+		This constructor method sets up the main components of the drawing application, including:
+		- An RGBA image for storing drawings, which allows transparency.
+		- A drawing canvas for user interactions.
+		- Controls and tools, such as color selection, brush, rubber, and text buttons.
+		- Event bindings for interactive functionality, like drawing and erasing.
 
 		Args:
-			root (tk.Tk): Root window of the tkinter application.
+			root (tk.Tk): The main Tkinter window in which the application is displayed.
+
+		Attributes:
+			selected_brush_size (tk.StringVar): Tracks the size of the selected brush.
+			root (tk.Tk): Reference to the main application window.
+			width (int): Width of the drawing canvas.
+			height (int): Height of the drawing canvas.
+			bg_colour (str): Default background color of the canvas.
+			image (PIL.Image.Image): The RGBA image where drawings are stored.
+			draw (PIL.ImageDraw.ImageDraw): Object for drawing on `self.image`.
+			last_x, last_y (int, int): Last known coordinates for drawing actions.
+			pen_color (str): Current color of the drawing tool.
+			last_color (str): Stores the previous pen color, used for switching tools.
+			control_frame (tk.Frame): Frame containing UI controls.
+			mode (str): Current mode of the application, e.g., 'draw'.
+			color_button (tk.Button): Button to choose drawing color.
+			brush_button (tk.Button): Button to activate the brush tool.
+			rubber_button (tk.Button): Button to activate the eraser tool.
+			text_button (tk.Button): Button to add text to the canvas.
+			label (tk.Label): Label displaying the current pen color.
+			canvas (tk.Canvas): Canvas widget for displaying and interacting with the image.
+
+		Methods called:
+			- `setup_ui()`: Sets up the user interface components in the control frame.
+			- `binds()`: Configures event bindings for user interactions on the canvas.
+
 		"""
 		self.selected_brush_size = tk.StringVar()
 		self.root = root
@@ -131,6 +162,19 @@ class DrawingApp:
 
 	@staticmethod
 	def add_tooltip(widget, text):
+		"""
+		    This method creates a `Toplevel` window that appears near the widget when
+		    the mouse cursor enters the widget's area, displaying the specified tooltip text.
+		    The tooltip window closes automatically when the mouse cursor leaves the widget area.
+
+		    Args:
+		        widget (tk.Widget): The widget to which the tooltip will be attached.
+		        text (str): The text to display within the tooltip window.
+
+		    Inside the method:
+		        - `show_tooltip(event)`: A function to create and display the tooltip near the widget.
+		        - `hide_tooltip(event)`: A function to destroy the tooltip when the mouse leaves the widget area.
+		"""
 		tooltip = None
 
 		def show_tooltip(event):
@@ -155,11 +199,11 @@ class DrawingApp:
 
 	def paint(self, event):
 		"""
-		Draws a line on the canvas and image from the last known mouse position to
-		the current mouse position. This function is bound to mouse movement events.
+			Draws a line on the canvas and image from the last known mouse position to
+			the current mouse position. This function is bound to mouse movement events.
 
-		Args:
-			event (tk.Event): The event object containing the current mouse position.
+			Args:
+				event (tk.Event): The event object containing the current mouse position.
 		"""
 		self.rubber_button.config(state='normal')
 		if self.mode == 'draw':
@@ -181,6 +225,11 @@ class DrawingApp:
 		self.label.config(bg=self.pen_color)
 
 	def brush(self):
+		"""
+		    This method sets the app's drawing mode, enabling the brush tool
+		    with the color stored in `self.last_color`. It updates the canvas cursor
+		    to indicate active brush tool and visually resets other tools' states.
+		"""
 		self.color_button.config(state='normal')
 		self.pen_color = self.last_color
 		self.canvas.config(cursor='@cursor.cur')
@@ -189,8 +238,8 @@ class DrawingApp:
 
 	def rubber(self):
 		"""
-		Activates the rubber tool by setting the pen color to white (background color)
-		and storing the last used pen color in case the user switches back to brush.
+			Activates the rubber tool by setting the pen color to white (background color)
+			and storing the last used pen color in case the user switches back to brush.
 		"""
 
 		self.last_color = self.pen_color
@@ -202,6 +251,12 @@ class DrawingApp:
 		self.color_button.config(state='disabled')
 
 	def pipette(self, event):
+		"""
+		   This method captures the color of a pixel located at the given coordinates (`event.x`, `event.y`)
+		   on the canvas image and sets it as active drawing color (`self.pen_color`).
+		   Additionally, it updates the cursor to indicate the pipette tool and adjusts the
+		   button states to reflect the selected tool.
+		"""
 		rgb = self.image.getpixel((event.x, event.y))
 		self.pen_color = '#{:02x}{:02x}{:02x}'.format(*rgb)
 		self.canvas.config(cursor='@pipette.cur')
@@ -211,17 +266,17 @@ class DrawingApp:
 
 	def reset(self, event):
 		"""
-		Resets the last known mouse position, ending the current line. This function
-		is called on mouse release events.
+			Resets the last known mouse position, ending the current line. This function
+			is called on mouse release events.
 
-		Args:
-			event (tk.Event): The event object indicating the mouse release.
+			Args:
+				event (tk.Event): The event object indicating the mouse release.
 		"""
 		self.last_x, self.last_y = None, None
 
 	def clear_canvas(self):
 		"""
-		Clears the canvas and resets the image to a blank white background.
+			Clears the canvas and resets the image to a blank white background.
 		"""
 		self.canvas.delete('all')
 		self.canvas.config(background='white')
@@ -232,13 +287,16 @@ class DrawingApp:
 
 	def choose_color(self, event):
 		"""
-		Opens a color chooser dialog to let the user pick a new color for the pen.
-		Updates the pen color with the selected color.
+			Opens a color chooser dialog to let the user pick a new color for the pen.
+			Updates the pen color with the selected color.
 		"""
 		self.pen_color = colorchooser.askcolor(color=self.pen_color)[1]
 		self.last_color = self.pen_color
 
 	def choose_size(self):
+		"""
+			Asks the user to set custom sizes of plot and creates a new canvas and image with the specified size.
+		"""
 		self.width = tk.simpledialog.askinteger('','Ширина', parent=self.root)
 		self.height = tk.simpledialog.askinteger('' ,'Высота', parent=self.root)
 		if self.width is not None and self.height is not None:
@@ -250,6 +308,16 @@ class DrawingApp:
 			self.binds()
 
 	def background(self):
+		"""
+		    Opens a color chooser dialog to set a new background color for the canvas and image.
+
+		    Attributes updated:
+		        - `self.bg_colour`: Stores the selected background color in hex format.
+		        - `self.image`: Recreates the image with the new background color.
+		        - `self.draw`: Updates the drawing object to use the new image.
+		        - `self.canvas`: Configures the canvas background and updates its image.
+
+		    """
 		self.bg_colour = colorchooser.askcolor(color=self.pen_color)[1]
 		if self.bg_colour:
 			bg_rgb = Image.new("RGB", (1, 1), self.bg_colour).getpixel((0, 0))
@@ -260,15 +328,24 @@ class DrawingApp:
 			self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
 
 	def add_text(self):
-		text = simpledialog.askstring('Введите текст', 'Введите текст для добавления:', parent=self.root)
-		text_size = simpledialog.askinteger('Размер текста', 'Введите размер текста:', parent=self.root)
-		if text and text_size:
+		"""
+		    Asks the user to enter text and its size, then places the text on the canvas at a specified location.
+
+		    Attributes updated:
+		        - `self.image`: Updates with the composited text layer to display on the canvas.
+		        - `self.tk_image`: Contains the updated image for display on the canvas.
+		        - `self.canvas`: Displays the modified image with the newly added text.
+
+		    """
+		text_str = simpledialog.askstring('Введите текст', '', parent=self.root)
+		text_size = simpledialog.askinteger('Размер текста', '', parent=self.root)
+		if text_str and text_size:
 			font = ImageFont.truetype('arial.ttf', text_size)
 
 			def on_click(event):
 				text_layer = Image.new("RGBA", self.image.size, (255, 255, 255, 0))
-				text_draw = ImageDraw.Draw(text_layer)
-				text_draw.text((event.x, event.y), text, fill=self.pen_color, font=font)
+				text_img = ImageDraw.Draw(text_layer)
+				text_img.text((event.x, event.y), text_str, fill=self.pen_color, font=font)
 				self.image = Image.alpha_composite(self.image, text_layer)
 				self.tk_image = ImageTk.PhotoImage(self.image.convert("RGB"))
 				self.canvas.create_image(0, 0, anchor="nw", image=self.tk_image)
