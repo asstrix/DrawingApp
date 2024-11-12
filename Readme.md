@@ -24,7 +24,7 @@ Getting Started<br>
 Clone this repository or copy the code to a local file.<br>
 Install the required libraries if necessary.<br>
 Run the program:<br>
-<code>python drawing_app.py<code><br>
+python drawing_app.py<br>
 
 Screenshots<br>
 ![Alt text](https://github.com/asstrix/files/blob/main/Drawingapp/DrawingApp.png) 
