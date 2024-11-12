@@ -18,7 +18,7 @@ CTRL + C: Open the color chooser for the brush.<br>
 Requirements<br>
 Python 3.x<br>
 tkinter (pre-installed with Python)<br>
-Pillow library<br>
+Pillow library<br> pip install pillow
 
 Getting Started<br>
 Clone this repository or copy the code to a local file.<br>
